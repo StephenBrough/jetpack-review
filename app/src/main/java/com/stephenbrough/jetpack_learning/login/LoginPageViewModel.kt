@@ -1,15 +1,20 @@
 package com.stephenbrough.jetpack_learning.login
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.stephenbrough.jetpack_learning.domain.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.util.regex.Pattern
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginFormViewModel @Inject constructor() : ViewModel() {
+class LoginFormViewModel @Inject constructor(
+    private val authRepository: AuthRepository
+) : ViewModel() {
 
     private val _state = MutableStateFlow(LoginFormState())
     val state = _state.asStateFlow()
@@ -29,6 +34,17 @@ class LoginFormViewModel @Inject constructor() : ViewModel() {
                 it.copy(passwordValidationError = "Invalid password")
             }
         }
+
+        // No errors, make the request
+        viewModelScope.launch {
+            val loginResult = authRepository.login(email.email, password.password)
+            if (loginResult.isSuccess) {
+                println("Success")
+            } else {
+                println("Failure")
+            }
+        }
+
 
         println("Login")
     }

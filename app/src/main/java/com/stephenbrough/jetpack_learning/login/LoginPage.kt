@@ -125,11 +125,11 @@ fun LoginPage(
 
         OutlinedButton(
             onClick = {
-                onLoginClicked()
-//                viewModel.login(
-//                    email = LoginForm.Email(emailValue.text.toString()),
-//                    password = LoginForm.Password(passwordValue.text.toString())
-//                )
+//                onLoginClicked()
+                viewModel.login(
+                    email = LoginForm.Email(emailValue.text.toString()),
+                    password = LoginForm.Password(passwordValue.text.toString())
+                )
             },
             modifier = Modifier.fillMaxWidth(),
             content = { Text("Login") },
