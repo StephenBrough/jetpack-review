@@ -4,17 +4,24 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.modifier.modifierLocalOf
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entry
@@ -27,10 +34,14 @@ import com.stephenbrough.jetpack_learning.login.LoginPage
 import com.stephenbrough.jetpack_learning.ui.theme.JetpacklearningTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.serialization.Serializable
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    private val authViewModel: AuthViewModel by viewModels()
+
     @OptIn(ExperimentalSharedTransitionApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,7 +61,29 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun NavigationContainer(innerPadding: PaddingValues) {
-        val backStack = rememberNavBackStack(LoginPage)
+        val backStack = rememberNavBackStack(LoadingPage)
+        val authState by authViewModel.authState.collectAsStateWithLifecycle()
+
+        LaunchedEffect(authState) {
+            println("Auth state changed: ${authState}")
+            when(authState) {
+                AuthState.Loading -> {
+                    backStack.clear()
+                    backStack.add(LoadingPage)
+                }
+                AuthState.LoggedOut -> {
+                    backStack.clear()
+                    backStack.add(LoginPage)
+                }
+                AuthState.LoggedIn -> {
+                    println("Logged in!!!")
+                    backStack.clear()
+                    backStack.add(LandingPage)
+                }
+
+                AuthState.Authenticated -> {}
+            }
+        }
 
         NavDisplay(
             backStack = backStack,
@@ -59,6 +92,15 @@ class MainActivity : ComponentActivity() {
                 rememberViewModelStoreNavEntryDecorator(),
                 ),
             entryProvider = entryProvider {
+                entry<LoadingPage> {
+                    Surface(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.padding(innerPadding).fillMaxSize()
+                        )
+                    }
+                }
                 entry<LoginPage> {
                     LoginPage(Modifier.padding(innerPadding), onLoginSuccess = {
                         backStack.clear()
@@ -66,7 +108,10 @@ class MainActivity : ComponentActivity() {
                     })
                 }
                 entry<LandingPage> {
-                    LandingPage(Modifier.padding(innerPadding))
+                    LandingPage(
+                        Modifier.padding(innerPadding),
+                        onLogout = {authViewModel.logout()}
+                        )
                 }
 
             }
@@ -93,3 +138,6 @@ data object LoginPage : NavKey
 
 @Serializable
 data object LandingPage : NavKey
+
+@Serializable
+data object LoadingPage : NavKey

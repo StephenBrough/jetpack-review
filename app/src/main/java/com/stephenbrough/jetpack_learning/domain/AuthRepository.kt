@@ -1,17 +1,23 @@
 package com.stephenbrough.jetpack_learning.domain
 
+import com.stephenbrough.jetpack_learning.domain.prefs.AuthPrefs
 import jakarta.inject.Inject
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Singleton
 
 
 interface AuthRepository {
     suspend fun login(username: String, password: String): Result<String>
+    suspend fun isLoggedIn(): Flow<Boolean>
+    suspend fun logout()
 }
 
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
-    private val loginApiService: LoginApiService
+    private val loginApiService: LoginApiService,
+    private val authPrefs: AuthPrefs
 ): AuthRepository{
     override suspend fun login(
         username: String,
@@ -27,6 +33,8 @@ class AuthRepositoryImpl @Inject constructor(
             if (result.isSuccessful) {
                 val loginResponse = result.body()
                 val token = loginResponse?.token ?: ""
+                authPrefs.setAuthToken(token)
+
                 Result.success(token)
             } else {
                 val errorMessage = result.errorBody()?.string() ?: "Unknown error"
@@ -35,6 +43,15 @@ class AuthRepositoryImpl @Inject constructor(
         } catch(e: Exception) {
             Result.failure(e)
         }
+    }
+
+    // Used to determine whether the user is logged in or not at all times
+    override suspend fun isLoggedIn(): Flow<Boolean> {
+        return authPrefs.getAuthToken().map { token -> !token.isNullOrEmpty() }
+    }
+
+    override suspend fun logout() {
+        authPrefs.clearAuthToken()
     }
 }
 
