@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.input.TextObfuscationMode
 import androidx.compose.foundation.text.input.rememberTextFieldState
@@ -26,12 +27,11 @@ import androidx.compose.material3.OutlinedSecureTextField
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -40,7 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import com.stephenbrough.jetpack_learning.MainActivity.Companion.LocalNavSharedTransitionScope
-import com.stephenbrough.jetpack_learning.util.AnimatedTextField
+import com.stephenbrough.jetpack_learning.util.FadeAnimatedTextField
+import com.stephenbrough.jetpack_learning.util.FadeTranslateAnimatedTextField
 import kotlinx.coroutines.flow.takeWhile
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -48,16 +49,22 @@ import kotlinx.coroutines.flow.takeWhile
 fun LoginPage(
     modifier: Modifier,
     viewModel: LoginFormViewModel = hiltViewModel(),
-    onLoginClicked: () -> Unit
+    onLoginSuccess: () -> Unit,
 ) {
-    val pageState = viewModel.state.collectAsState()
+    val pageState by viewModel.state.collectAsState()
     val sharedScope = LocalNavSharedTransitionScope.current
 
     val emailValue = rememberTextFieldState(initialText = "")
     val passwordValue = rememberTextFieldState()
-    var showPassword by remember { mutableStateOf(false) }
+    var showPassword by rememberSaveable { mutableStateOf(false) }
 
-    // Email error handling
+    LaunchedEffect(pageState.isLoggedIn) {
+        if (pageState.isLoggedIn) {
+            onLoginSuccess()
+        }
+    }
+
+    // Email error handling;
     LaunchedEffect(emailValue.text) {
         snapshotFlow { emailValue.text.toString() }.takeWhile { it.isNotBlank() }
             .collect { viewModel.checkEmail(LoginForm.Email(it)) }
@@ -94,18 +101,18 @@ fun LoginPage(
             state = emailValue,
             label = { Text("Email") },
             modifier = Modifier.fillMaxWidth(),
-            isError = pageState.value.emailValidationError?.isNotBlank() ?: false,
+            isError = pageState.emailValidationError?.isNotBlank() ?: false,
             leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
         )
-        AnimatedTextField(
-            errorMessage = pageState.value.emailValidationError,
+        FadeTranslateAnimatedTextField(
+            errorMessage = pageState.emailValidationError,
         )
         OutlinedSecureTextField(
             state = passwordValue,
             textObfuscationMode = if (showPassword) TextObfuscationMode.Visible else TextObfuscationMode.Hidden,
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Password") },
-            isError = pageState.value.passwordValidationError?.isNotBlank() ?: false,
+            isError = pageState.passwordValidationError?.isNotBlank() ?: false,
             leadingIcon = { Icon(Icons.Default.Password, contentDescription = null) },
             trailingIcon = {
                 Icon(
@@ -118,10 +125,17 @@ fun LoginPage(
             }
 
         )
-        AnimatedTextField(
-            errorMessage = pageState.value.passwordValidationError,
+        FadeTranslateAnimatedTextField(
+            errorMessage = pageState.passwordValidationError,
         )
-        Spacer(modifier = Modifier.height(50.dp))
+
+
+        FadeAnimatedTextField(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentSize(Alignment.Center),
+            errorMessage = pageState.error ?: ""
+        )
 
         OutlinedButton(
             onClick = {

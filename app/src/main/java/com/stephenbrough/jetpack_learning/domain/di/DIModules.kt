@@ -24,7 +24,7 @@ object NetworkModule {
     @Singleton
     fun providesOkHttp(): OkHttpClient {
         return OkHttpClient.Builder()
-            .addInterceptor(MockLoginInterceptor(false))
+            .addInterceptor(MockLoginInterceptor(true))
             .build()
     }
 

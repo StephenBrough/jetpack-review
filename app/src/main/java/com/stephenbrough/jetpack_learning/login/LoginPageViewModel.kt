@@ -21,6 +21,7 @@ class LoginFormViewModel @Inject constructor(
 
 
     fun login(email: LoginForm.Email, password: LoginForm.Password) {
+        _state.update { it.copy(error = null) } // Clear any login errors
         if (!email.isValid()) {
             println("Invalid email")
             _state.update {
@@ -35,23 +36,19 @@ class LoginFormViewModel @Inject constructor(
             }
         }
 
-        // No errors, make the request
-        viewModelScope.launch {
-            val loginResult = authRepository.login(email.email, password.password)
-            if (loginResult.isSuccess) {
-                println("Success")
-            } else {
-                println("Failure")
+        if (email.isValid() && password.isValid()) {
+            println("Logging in...")
+            // No errors, make the request
+            viewModelScope.launch {
+                val loginResult = authRepository.login(email.email, password.password)
+                if (loginResult.isSuccess) {
+                    println("Success")
+                    _state.update { it.copy(isLoggedIn = true) }
+                } else {
+                    _state.update { it.copy(error = loginResult.exceptionOrNull()?.message) }
+                }
             }
         }
-
-
-        println("Login")
-    }
-
-    fun clearEmailError() {
-        if (_state.value.emailValidationError != null)
-            _state.update { it.copy(emailValidationError = null) }
     }
 
     fun clearPasswordError() {
@@ -65,6 +62,7 @@ class LoginFormViewModel @Inject constructor(
             email.isValid() && _state.value.emailValidationError != null -> {
                 _state.update { it.copy(emailValidationError = null) }
             }
+
             !email.isValid() && _state.value.emailValidationError == null -> {
                 _state.update { it.copy(emailValidationError = "Invalid email") }
             }
@@ -82,6 +80,7 @@ data class LoginFormState(
     // required at that point so we show the error as long as the entered email is invalid
     val emailError: Boolean = false,
     val passwordValidationError: String? = null,
+    val isLoggedIn: Boolean = false
 )
 
 

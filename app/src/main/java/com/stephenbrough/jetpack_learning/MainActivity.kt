@@ -34,10 +34,6 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalSharedTransitionApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-
-
-
         enableEdgeToEdge()
         setContent {
             JetpacklearningTheme {
@@ -64,7 +60,7 @@ class MainActivity : ComponentActivity() {
                 ),
             entryProvider = entryProvider {
                 entry<LoginPage> {
-                    LoginPage(Modifier.padding(innerPadding), onLoginClicked = {
+                    LoginPage(Modifier.padding(innerPadding), onLoginSuccess = {
                         backStack.clear()
                         backStack.add(LandingPage)
                     })

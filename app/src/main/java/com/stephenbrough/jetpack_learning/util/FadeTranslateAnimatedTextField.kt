@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 
 @Composable
-fun AnimatedTextField(
+fun FadeTranslateAnimatedTextField(
     modifier: Modifier = Modifier,
     errorMessage: String?,
     animationDuration: Int = 400,
