@@ -1,13 +1,13 @@
 package com.stephenbrough.jetpack_learning.settings_page
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.NavigateBefore
-import androidx.compose.material.icons.filled.NavigateBefore
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -23,7 +23,10 @@ import com.stephenbrough.jetpack_learning.MainActivity.Companion.LocalNavSharedT
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
-fun SettingsPage(modifier: Modifier = Modifier) {
+fun SettingsPage(
+    modifier: Modifier = Modifier,
+    onBack: () -> Unit
+) {
     val sharedScope = LocalNavSharedTransitionScope.current
 
     Box(
@@ -36,6 +39,9 @@ fun SettingsPage(modifier: Modifier = Modifier) {
                         Icon(
                             Icons.AutoMirrored.Filled.NavigateBefore,
                             contentDescription = "Back",
+                            modifier = Modifier.clickable {
+                                onBack()
+                            }
                         )
                     },
                     colors = TopAppBarDefaults.topAppBarColors(

@@ -146,7 +146,12 @@ class MainActivity : ComponentActivity() {
                     )
                 }
                 entry<SettingsRoute> {
-                    SettingsPage(Modifier.padding(innerPadding))
+                    SettingsPage(
+                        Modifier.padding(innerPadding),
+                        onBack = {
+                            backstack.removeAt(backstack.lastIndex)
+                        }
+                    )
                 }
             }
         )
