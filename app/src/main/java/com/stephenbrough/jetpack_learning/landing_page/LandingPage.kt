@@ -1,25 +1,15 @@
 package com.stephenbrough.jetpack_learning.landing_page
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -29,7 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarDefaults
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -38,26 +28,34 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavAction
+import androidx.navigation3.runtime.entry
+import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
-import coil3.compose.AsyncImage
+import androidx.navigation3.ui.NavDisplay
 import com.stephenbrough.jetpack_learning.MainActivity.Companion.LocalNavSharedTransitionScope
+import com.stephenbrough.jetpack_learning.amiibo_list_page.AmiigoListPage
+import com.stephenbrough.jetpack_learning.domain.Book
+import com.stephenbrough.jetpack_learning.harry_potter_details_page.HarryPotterDetailsPage
+import com.stephenbrough.jetpack_learning.harry_potter_list_page.HarryPotterListPage
+import com.stephenbrough.jetpack_learning.util.navigation.AmiiboListRoute
+import com.stephenbrough.jetpack_learning.util.navigation.HarryPotterDetailRoute
+import com.stephenbrough.jetpack_learning.util.navigation.HarryPotterListRoute
+import com.stephenbrough.jetpack_learning.util.navigation.LoadingRoute
 import com.stephenbrough.jetpack_learning.util.navigation.TOP_LEVEL_ROUTES
+import com.stephenbrough.jetpack_learning.util.navigation.TopLevelBackStack
 import kotlinx.coroutines.launch
 
 sealed class NavDrawerActions {
     object SettingsAction : NavDrawerActions()
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class,
+@OptIn(
+    ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class,
     ExperimentalMaterial3ExpressiveApi::class
 )
 @Composable
@@ -70,8 +68,9 @@ fun LandingPage(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    val viewModel: LandingPageViewModel = hiltViewModel()
-    val harryPotterBooks by viewModel.books.collectAsStateWithLifecycle()
+    val topLevelBackStack by rememberSaveable(stateSaver = TopLevelBackStack.Saver()) {
+        mutableStateOf(TopLevelBackStack(HarryPotterListRoute))
+    }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -164,45 +163,63 @@ fun LandingPage(
                     })
             },
             bottomBar = {
-                NavigationBar/*(windowInsets = NavigationBarDefaults.windowInsets) */{
+                NavigationBar {
                     TOP_LEVEL_ROUTES.forEach { topLevelRoute ->
-//                        val isSelected = topLevelRoute ==
+                        val isSelected = topLevelRoute == topLevelBackStack.topLevelKey
+                        NavigationBarItem(
+                            selected = isSelected,
+                            onClick = {
+                                topLevelBackStack.addTopLevel(topLevelRoute)
+                            },
+
+                            icon = {
+                                Icon(topLevelRoute.icon, contentDescription = null)
+                            }
+                        )
                     }
                 }
             }
 
         ) { innerPadding ->
-            LazyColumn(
-                modifier = Modifier
-                    .padding(innerPadding),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                harryPotterBooks.forEach { book ->
-                    item {
-                        Card(
-                            onClick = { /*TODO*/ },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors =CardDefaults.cardColors().copy(
-                                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                            )
+            NavDisplay(
+                backStack = topLevelBackStack.backStack,
+                onBack = {
+                    topLevelBackStack.removeLast()
+                },
+                entryProvider = entryProvider {
+                    entry<LoadingRoute> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Row(
-                                modifier = Modifier.padding(16.dp)
-                            ) {
-                                AsyncImage(model = book.cover, contentDescription = "Book cover")
-                                Spacer(modifier = Modifier.padding(start = 8.dp))
-                                Column {
-                                    Text(text = book.title, style = MaterialTheme.typography.titleLarge)
-                                    Text(text = book.description, style = MaterialTheme.typography.bodyMedium)
-                                }
-                            }
+                            CircularProgressIndicator(
+                                modifier = Modifier
+                                    .padding(innerPadding)
+                            )
                         }
                     }
-                }
+                    entry<HarryPotterListRoute> {
+                        HarryPotterListPage(
+                            Modifier.padding(innerPadding),
+                            onItemClick = { selectedBook: Book ->
+                                topLevelBackStack.add(HarryPotterDetailRoute(selectedBook))
+                            }
+                        )
+                    }
+                    entry<HarryPotterDetailRoute> { route ->
+                        HarryPotterDetailsPage(
+                            Modifier.padding(innerPadding),
+                            book = route.book,
+                        )
 
-            }
+                    }
+
+                    entry<AmiiboListRoute> {
+                        AmiigoListPage(Modifier.padding(innerPadding))
+                    }
+
+                }
+            )
         }
     }
 }

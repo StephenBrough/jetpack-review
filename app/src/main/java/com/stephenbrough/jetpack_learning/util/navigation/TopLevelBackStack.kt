@@ -1,10 +1,10 @@
 package com.stephenbrough.jetpack_learning.util.navigation
 
-import android.os.Bundle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 
@@ -30,7 +30,6 @@ class TopLevelBackStack<T : Any>(startKey: T) {
      * topLevelStacks = {
      *   HarryPotter -> [HarryPotter, HarryPotterDetails],
      *   Amiibo -> [Amiibo, AmiiboDetails]
-     *   Settings -> [Settings]
      * }
      */
     internal var topLevelStacks: LinkedHashMap<T, SnapshotStateList<T>> = linkedMapOf(
@@ -58,8 +57,9 @@ class TopLevelBackStack<T : Any>(startKey: T) {
         } else {
             // Otherwise move it to the end of the stacks
             topLevelStacks.apply {
-                remove(key)
-                put(key, this[key]!!)
+                remove(key)?.let {
+                    put(key, it)
+                }
             }
         }
         topLevelKey = key
@@ -99,88 +99,19 @@ class TopLevelBackStack<T : Any>(startKey: T) {
         updateBackStack()
     }
 
-    internal fun restoreState(
-        stacks: LinkedHashMap<T, SnapshotStateList<T>>,
-        topLevelKey: T,
-    ) {
-        topLevelStacks = stacks
-        this.topLevelKey = topLevelKey
-        updateBackStack()
-    }
-}
-
-
-/**
- * This is to allow the use of rememberSaveable for this nav stack
- */
-
-private const val TOP_LEVEL_ROUTE_KEY = "topLevelKey"
-private const val TOP_LEVEL_STACKS_KEY = "topLevelStacks"
-private const val TOP_LEVEL_KEY_ORDER_KEY = "topLevelKeyOrder"
-fun topLevelSaver() = Saver<TopLevelBackStack<Any>, Bundle>(
-    save = { backStack ->
-        Bundle().apply {
-            // Save the current top-level route
-            putString(TOP_LEVEL_ROUTE_KEY, RouteRegistry.toName(backStack.topLevelKey))
-
-            // Save the structure of the stacks
-            val stacksBundle = Bundle()
-            backStack.topLevelStacks.forEach { (key, stack) ->
-                val keyName = RouteRegistry.toName(key)
-                val stackArray = stack.map { RouteRegistry.toName(it) }.toTypedArray()
-                stacksBundle.putStringArray(keyName, stackArray)
-            }
-            putBundle(TOP_LEVEL_STACKS_KEY, stacksBundle)
-
-            // Save order of top-level keys (needed due to LinkedHashMap)
-            val keyOrder = backStack.topLevelStacks.keys.mapNotNull { RouteRegistry.toName(it) }.toTypedArray()
-            putStringArray(TOP_LEVEL_KEY_ORDER_KEY, keyOrder)
-        }
-
-    },
-    restore = { bundle ->
-        try {
-        val topLevelKeyName = bundle.getString(TOP_LEVEL_ROUTE_KEY) ?: return@Saver null
-            val topLevelKey = RouteRegistry.fromName(topLevelKeyName) ?: return@Saver null
-
-        val stacksBundle = bundle.getBundle(TOP_LEVEL_STACKS_KEY) ?: return@Saver null
-        val keyOrder = bundle.getStringArray(TOP_LEVEL_KEY_ORDER_KEY) ?: return@Saver null
-
-            val restoredStacks = linkedMapOf<Any, SnapshotStateList<Any>>()
-
-            keyOrder.forEach { keyName ->
-                val key = RouteRegistry.fromName(keyName) ?: return@forEach
-                val stackArray = stacksBundle.getStringArray(keyName) ?: return@forEach
-
-                val stack = mutableStateListOf<Any>()
-                stackArray.forEach {
-                    RouteRegistry.fromName(it)?.let { stack.add(it) }
+    companion object {
+        // Saver for rememberSaveable
+        fun Saver(): Saver<TopLevelBackStack<Any>, Any> = listSaver(
+            save = { backStack ->
+                listOf(backStack.topLevelKey, backStack.topLevelStacks)
+            },
+            restore = { list ->
+                TopLevelBackStack(list[0]).apply {
+                    topLevelStacks = list[1] as LinkedHashMap<Any, SnapshotStateList<Any>>
+                    updateBackStack()
                 }
-                restoredStacks[key] = stack
             }
-
-            TopLevelBackStack<Any>(topLevelKey).apply {
-                restoreState(restoredStacks, topLevelKey)
-            }
-
-        } catch (e: Exception) {
-            null
-        }
+        )
     }
-)
-
-object RouteRegistry {
-    private val routes = mapOf(
-        "Loading" to Loading,
-        "Login" to Login,
-        "Landing" to Landing,
-        "Settings" to Settings,
-        "HarryPotterList" to HarryPotterList,
-        "HarryPotterDetail" to HarryPotterDetail,
-        "AmiiboList" to AmiiboList,
-        "AmiigoDetail" to AmiigoDetail
-    )
-
-    fun fromName(name: String): Any? = routes[name]
-    fun toName(route: Any): String? = route::class.simpleName
 }
+
