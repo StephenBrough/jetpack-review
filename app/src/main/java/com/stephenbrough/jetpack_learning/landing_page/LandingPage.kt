@@ -38,10 +38,13 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import androidx.navigation3.ui.NavDisplay
 import com.stephenbrough.jetpack_learning.MainActivity.Companion.LocalNavSharedTransitionScope
+import com.stephenbrough.jetpack_learning.amiibo_details_page.AmiiboDetailsPage
 import com.stephenbrough.jetpack_learning.amiibo_list_page.AmiigoListPage
+import com.stephenbrough.jetpack_learning.domain.Amiibo
 import com.stephenbrough.jetpack_learning.domain.Book
 import com.stephenbrough.jetpack_learning.harry_potter_details_page.HarryPotterDetailsPage
 import com.stephenbrough.jetpack_learning.harry_potter_list_page.HarryPotterListPage
+import com.stephenbrough.jetpack_learning.util.navigation.AmiiboDetailRoute
 import com.stephenbrough.jetpack_learning.util.navigation.AmiiboListRoute
 import com.stephenbrough.jetpack_learning.util.navigation.HarryPotterDetailRoute
 import com.stephenbrough.jetpack_learning.util.navigation.HarryPotterListRoute
@@ -211,11 +214,22 @@ fun LandingPage(
                             Modifier.padding(innerPadding),
                             book = route.book,
                         )
-
                     }
 
                     entry<AmiiboListRoute> {
-                        AmiigoListPage(Modifier.padding(innerPadding))
+                        AmiigoListPage(
+                            Modifier.padding(innerPadding),
+                            onItemClick = { selectedAmiibo: Amiibo ->
+                                topLevelBackStack.add(AmiiboDetailRoute(selectedAmiibo))
+                            }
+                        )
+                    }
+
+                    entry<AmiiboDetailRoute> { route ->
+                        AmiiboDetailsPage(
+                            Modifier.padding(innerPadding),
+                            amiibo = route.amiibo,
+                        )
                     }
 
                 }

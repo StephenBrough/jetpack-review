@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Toys
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.stephenbrough.jetpack_learning.domain.Amiibo
 import com.stephenbrough.jetpack_learning.domain.Book
 import kotlinx.parcelize.Parcelize
 
@@ -28,7 +29,7 @@ data object AmiiboListRoute : TopLevelRoute {
     override val icon = Icons.Default.Toys
 }
 
-data object AmiiboDetailRoute
+data class AmiiboDetailRoute(val amiibo: Amiibo)
 
 val TOP_LEVEL_ROUTES: List<TopLevelRoute> = listOf(HarryPotterListRoute, AmiiboListRoute)
 

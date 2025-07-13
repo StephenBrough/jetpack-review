@@ -5,6 +5,9 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
+import com.stephenbrough.jetpack_learning.domain.AmiiboRepository
+import com.stephenbrough.jetpack_learning.domain.AmiiboRepositoryImpl
+import com.stephenbrough.jetpack_learning.domain.AmiiboService
 import com.stephenbrough.jetpack_learning.domain.AuthRepository
 import com.stephenbrough.jetpack_learning.domain.AuthRepositoryImpl
 import com.stephenbrough.jetpack_learning.domain.HarryPotterRepository
@@ -64,6 +67,18 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    @Named("amiibo")
+    fun provideAmiiboRetrofit(okHttpClient: OkHttpClient): Retrofit {
+        return Retrofit.Builder().baseUrl("https://amiiboapi.com/api/")
+            .client(okHttpClient).addConverterFactory(
+                Json.asConverterFactory(
+                    "application/json; charset=UTF8".toMediaType()
+                )
+            ).build()
+    }
+
+    @Provides
+    @Singleton
     fun providesLoginService(@Named("regular") retrofit: Retrofit): LoginApiService {
         return retrofit.create(LoginApiService::class.java)
     }
@@ -72,6 +87,12 @@ object NetworkModule {
     @Singleton
     fun providesHarryPotterService(@Named("harryPotter") retrofit: Retrofit): HarryPotterService {
         return retrofit.create(HarryPotterService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun providesAmiiboService(@Named("amiibo") retrofit: Retrofit): AmiiboService {
+        return retrofit.create(AmiiboService::class.java)
     }
 }
 
@@ -85,6 +106,10 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindHarryPotterRepository(harryPotterRepositoryImpl: HarryPotterRepositoryImpl): HarryPotterRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindAmiiboRepository(amiiboRepositoryImpl: AmiiboRepositoryImpl): AmiiboRepository
 }
 
 @Module
