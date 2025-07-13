@@ -1,10 +1,11 @@
-package com.stephenbrough.jetpack_learning.login
+package com.stephenbrough.jetpack_learning.login_page
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.stephenbrough.jetpack_learning.domain.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -16,9 +17,9 @@ class LoginFormViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
+
     private val _state = MutableStateFlow(LoginFormState())
     val state = _state.asStateFlow()
-
 
     fun login(email: LoginForm.Email, password: LoginForm.Password) {
         _state.update { it.copy(error = null) } // Clear any login errors
@@ -106,4 +107,3 @@ object LoginForm {
         }
     }
 }
-

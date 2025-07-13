@@ -1,14 +1,15 @@
 package com.stephenbrough.jetpack_learning
 
+import android.os.Parcelable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.stephenbrough.jetpack_learning.domain.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.parcelize.Parcelize
 import javax.inject.Inject
 
 @HiltViewModel
@@ -21,23 +22,28 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    val authState = flow {
-        authRepository.isLoggedIn()
-            .collect { isLoggedIn ->
-                println("Collecting flow, isLoggedIn: $isLoggedIn")
-                emit(if (isLoggedIn) AuthState.LoggedIn else AuthState.LoggedOut)
-            }
-    }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000L),
-        AuthState.Loading
-    )
+    val authState = authRepository.isLoggedIn()
+        .map { isLoggedIn ->
+            println("Collecting flow, isLoggedIn: $isLoggedIn")
+            if (isLoggedIn) AuthState.LoggedIn else AuthState.LoggedOut
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000L),
+            AuthState.Loading
+        )
 }
 
-sealed class AuthState {
-    object Loading : AuthState()
-    object LoggedIn : AuthState()
-    object LoggedOut : AuthState()
+@Parcelize
+sealed class AuthState : Parcelable {
+    @Parcelize
+    data object Loading : AuthState()
 
-    object Authenticated : AuthState() // Bio auth
+    @Parcelize
+    data object LoggedIn : AuthState()
+
+    @Parcelize
+    data object LoggedOut : AuthState()
+
+    @Parcelize
+    data object Authenticated : AuthState() // Bio auth
 }

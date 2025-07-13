@@ -10,7 +10,7 @@ import javax.inject.Inject
 
 interface AuthPrefs {
     suspend fun setAuthToken(token: String)
-    suspend fun getAuthToken(): Flow<String?>
+    fun getAuthToken(): Flow<String?>
     suspend fun clearAuthToken()
 
     companion object {
@@ -28,7 +28,7 @@ class DataStoreAuthPrefs @Inject constructor(
         }
     }
 
-    override suspend fun getAuthToken(): Flow<String?> {
+    override fun getAuthToken(): Flow<String?> {
         println("Getting auth token")
         return dataStore.data.map { prefs -> prefs[DS_AUTH_TOKEN_KEY] }
     }

@@ -7,6 +7,9 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
 import com.stephenbrough.jetpack_learning.domain.AuthRepository
 import com.stephenbrough.jetpack_learning.domain.AuthRepositoryImpl
+import com.stephenbrough.jetpack_learning.domain.HarryPotterRepository
+import com.stephenbrough.jetpack_learning.domain.HarryPotterRepositoryImpl
+import com.stephenbrough.jetpack_learning.domain.HarryPotterService
 import com.stephenbrough.jetpack_learning.domain.LoginApiService
 import com.stephenbrough.jetpack_learning.domain.network.MockLoginInterceptor
 import com.stephenbrough.jetpack_learning.domain.prefs.AuthPrefs
@@ -22,6 +25,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -31,30 +35,43 @@ object NetworkModule {
     @Provides
     @Singleton
     fun providesOkHttp(): OkHttpClient {
-        return OkHttpClient.Builder()
-            .addInterceptor(MockLoginInterceptor(true))
-            .build()
+        return OkHttpClient.Builder().addInterceptor(MockLoginInterceptor(true)).build()
     }
 
     @Provides
     @Singleton
+    @Named("regular")
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
-
-        return Retrofit.Builder()
-            .baseUrl("https://example.com/api/")
-            .client(okHttpClient)
+        return Retrofit.Builder().baseUrl("https://example.com/api/").client(okHttpClient)
             .addConverterFactory(
                 Json.asConverterFactory(
                     "application/json; charset=UTF8".toMediaType()
                 )
-            )
-            .build()
+            ).build()
     }
 
     @Provides
     @Singleton
-    fun providesLoginService(retrofit: Retrofit): LoginApiService {
+    @Named("harryPotter")
+    fun provideHarryPotterRetrofit(okHttpClient: OkHttpClient): Retrofit {
+        return Retrofit.Builder().baseUrl("https://potterapi-fedeperin.vercel.app/en/")
+            .client(okHttpClient).addConverterFactory(
+                Json.asConverterFactory(
+                    "application/json; charset=UTF8".toMediaType()
+                )
+            ).build()
+    }
+
+    @Provides
+    @Singleton
+    fun providesLoginService(@Named("regular") retrofit: Retrofit): LoginApiService {
         return retrofit.create(LoginApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun providesHarryPotterService(@Named("harryPotter") retrofit: Retrofit): HarryPotterService {
+        return retrofit.create(HarryPotterService::class.java)
     }
 }
 
@@ -64,6 +81,10 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindAuthRepository(authRepositoryImpl: AuthRepositoryImpl): AuthRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindHarryPotterRepository(harryPotterRepositoryImpl: HarryPotterRepositoryImpl): HarryPotterRepository
 }
 
 @Module
