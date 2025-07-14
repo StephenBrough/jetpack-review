@@ -250,7 +250,7 @@ fun LandingPage(
                     entry<StarWarsDetailsRoute> {
                         StarWarsDetailsPage(
                             Modifier.padding(innerPadding),
-                            movieId = it.episodeId
+                            id = it.id
                         )
                     }
 

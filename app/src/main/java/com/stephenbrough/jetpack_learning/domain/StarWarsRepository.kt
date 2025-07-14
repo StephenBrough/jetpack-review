@@ -11,7 +11,7 @@ typealias StarWarsMovieDetail = MovieQuery.Film?
 
 interface StarWarsRepository {
     suspend fun getMovies(): List<StarWarsMovie>?
-    suspend fun getMovie(episodeId: Int): Result<StarWarsMovieDetail?>
+    suspend fun getMovie(id: String): Result<StarWarsMovieDetail?>
 }
 
 @Singleton
@@ -22,8 +22,8 @@ class StarWarsRepositoryImpl @Inject constructor(
         return apolloClient.query(MoviesQuery()).execute().data?.allFilms?.films
     }
 
-    override suspend fun getMovie(episodeId: Int): Result<StarWarsMovieDetail?> {
-        val response = apolloClient.query(MovieQuery("$episodeId")).execute()
+    override suspend fun getMovie(id: String): Result<StarWarsMovieDetail?> {
+        val response = apolloClient.query(MovieQuery(id)).execute()
         if (response.hasErrors()) {
             return Result.failure(Exception(response.errors.toString()))
         } else {

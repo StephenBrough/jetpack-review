@@ -16,14 +16,14 @@ import kotlinx.coroutines.flow.stateIn
 @HiltViewModel(assistedFactory = StarWarsDetailsViewModel.DetailsFactory::class)
 class StarWarsDetailsViewModel @AssistedInject constructor(
     private val starWarsRepository: StarWarsRepository,
-    @Assisted private val movieId: Int
+    @Assisted private val id: String
 ) : ViewModel() {
     private var _state = MutableStateFlow<StarWarsDetailsUiState>(StarWarsDetailsUiState.Loading)
     val state = _state
         .onStart {
             _state.value = StarWarsDetailsUiState.Loading
 
-            val result = starWarsRepository.getMovie(movieId)
+            val result = starWarsRepository.getMovie(id)
             result.fold(
                 { movie ->
                     _state.value = StarWarsDetailsUiState.Success(movie)
@@ -40,7 +40,7 @@ class StarWarsDetailsViewModel @AssistedInject constructor(
 
     @AssistedFactory
     interface DetailsFactory {
-        fun create(movieId: Int): StarWarsDetailsViewModel
+        fun create(id: String): StarWarsDetailsViewModel
     }
 }
 

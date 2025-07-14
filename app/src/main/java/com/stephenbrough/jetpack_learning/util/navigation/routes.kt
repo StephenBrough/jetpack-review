@@ -40,7 +40,7 @@ data object StarWarsListRoute : TopLevelRoute {
     override val title = "Star Wars"
 }
 
-data class StarWarsDetailsRoute(val episodeId: Int)
+data class StarWarsDetailsRoute(val id: String)
 
 data class AmiiboDetailRoute(val amiibo: Amiibo)
 

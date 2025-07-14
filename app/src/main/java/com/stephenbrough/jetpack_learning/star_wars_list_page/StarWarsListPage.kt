@@ -25,7 +25,7 @@ import com.stephenbrough.jetpack_learning.MainActivity.Companion.LocalNavSharedT
 @Composable
 fun StarWarsListPage(
     modifier: Modifier = Modifier,
-    onItemClick: (Int) -> Unit
+    onItemClick: (String) -> Unit
 ) {
     val viewModel = hiltViewModel<StarWarsListViewModel>()
     val movies = viewModel.movies.collectAsStateWithLifecycle()
@@ -41,7 +41,7 @@ fun StarWarsListPage(
             m?.let { movie ->
                 item(key = movie.title) {
                     Card(
-                        onClick = { onItemClick(movie.episodeID!!) },
+                        onClick = { onItemClick(movie.id) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors().copy(
                             containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),

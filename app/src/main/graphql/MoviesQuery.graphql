@@ -4,13 +4,12 @@ query MoviesQuery {
             director
             id
             title
-            episodeID
         }
     }
 }
 
-query MovieQuery($episodeId: ID!) {
-    film(filmID: $episodeId) {
+query MovieQuery($id: ID!) {
+    film(id: $id) {
         title
         director
         releaseDate

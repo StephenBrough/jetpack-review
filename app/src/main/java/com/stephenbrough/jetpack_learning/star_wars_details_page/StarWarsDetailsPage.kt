@@ -23,11 +23,13 @@ import com.stephenbrough.jetpack_learning.domain.StarWarsMovieDetail
 @Composable
 fun StarWarsDetailsPage(
     modifier: Modifier = Modifier,
-    movieId: Int
+    id: String
 ) {
     val viewModel =
-        hiltViewModel<StarWarsDetailsViewModel, StarWarsDetailsViewModel.DetailsFactory> { factory ->
-            factory.create(movieId)
+        hiltViewModel<StarWarsDetailsViewModel, StarWarsDetailsViewModel.DetailsFactory>(
+            key = id
+        ) { factory ->
+            factory.create(id)
         }
 
     val state by viewModel.state.collectAsStateWithLifecycle()
