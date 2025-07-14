@@ -1,0 +1,19 @@
+query MoviesQuery {
+    allFilms {
+        films {
+            director
+            id
+            title
+            episodeID
+        }
+    }
+}
+
+query MovieQuery($episodeId: ID!) {
+    film(filmID: $episodeId) {
+        title
+        director
+        releaseDate
+        edited
+    }
+}

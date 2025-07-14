@@ -69,7 +69,6 @@ fun SettingsPage(
 
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
-
             ) {
             }
         }

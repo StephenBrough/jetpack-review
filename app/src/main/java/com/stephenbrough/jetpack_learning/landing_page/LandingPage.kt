@@ -44,11 +44,15 @@ import com.stephenbrough.jetpack_learning.domain.Amiibo
 import com.stephenbrough.jetpack_learning.domain.Book
 import com.stephenbrough.jetpack_learning.harry_potter_details_page.HarryPotterDetailsPage
 import com.stephenbrough.jetpack_learning.harry_potter_list_page.HarryPotterListPage
+import com.stephenbrough.jetpack_learning.star_wars_details_page.StarWarsDetailsPage
+import com.stephenbrough.jetpack_learning.star_wars_list_page.StarWarsListPage
 import com.stephenbrough.jetpack_learning.util.navigation.AmiiboDetailRoute
 import com.stephenbrough.jetpack_learning.util.navigation.AmiiboListRoute
 import com.stephenbrough.jetpack_learning.util.navigation.HarryPotterDetailRoute
 import com.stephenbrough.jetpack_learning.util.navigation.HarryPotterListRoute
 import com.stephenbrough.jetpack_learning.util.navigation.LoadingRoute
+import com.stephenbrough.jetpack_learning.util.navigation.StarWarsDetailsRoute
+import com.stephenbrough.jetpack_learning.util.navigation.StarWarsListRoute
 import com.stephenbrough.jetpack_learning.util.navigation.TOP_LEVEL_ROUTES
 import com.stephenbrough.jetpack_learning.util.navigation.TopLevelBackStack
 import kotlinx.coroutines.launch
@@ -174,6 +178,9 @@ fun LandingPage(
                             onClick = {
                                 topLevelBackStack.addTopLevel(topLevelRoute)
                             },
+                            label = {
+                                Text(topLevelRoute.title)
+                            },
 
                             icon = {
                                 Icon(topLevelRoute.icon, contentDescription = null)
@@ -229,6 +236,21 @@ fun LandingPage(
                         AmiiboDetailsPage(
                             Modifier.padding(innerPadding),
                             amiibo = route.amiibo,
+                        )
+                    }
+
+                    entry<StarWarsListRoute> {
+                        StarWarsListPage(
+                            Modifier.padding(innerPadding),
+                            onItemClick = { id ->
+                                topLevelBackStack.add(StarWarsDetailsRoute(id))
+                            }
+                        )
+                    }
+                    entry<StarWarsDetailsRoute> {
+                        StarWarsDetailsPage(
+                            Modifier.padding(innerPadding),
+                            movieId = it.episodeId
                         )
                     }
 

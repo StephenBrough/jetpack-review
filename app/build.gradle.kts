@@ -8,6 +8,7 @@ plugins {
     id("com.google.dagger.hilt.android")
     alias(libs.plugins.jetbrains.kotlin.serialization)
     id("kotlin-parcelize")
+    alias(libs.plugins.apollo)
 }
 
 android {
@@ -89,4 +90,16 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
 
+    implementation(libs.apollo.runtime)
+
+}
+
+apollo {
+    service("service") {
+        packageName.set("com.stephenbrough.starwars")
+        introspection {
+            endpointUrl.set("https://graphql.org/swapi-graphql/graphql/")
+            schemaFile.set(file("src/main/graphql/schema.graphqls"))
+        }
+    }
 }

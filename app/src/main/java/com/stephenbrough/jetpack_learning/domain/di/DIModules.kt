@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
+import com.apollographql.apollo.ApolloClient
 import com.stephenbrough.jetpack_learning.domain.AmiiboRepository
 import com.stephenbrough.jetpack_learning.domain.AmiiboRepositoryImpl
 import com.stephenbrough.jetpack_learning.domain.AmiiboService
@@ -14,6 +15,8 @@ import com.stephenbrough.jetpack_learning.domain.HarryPotterRepository
 import com.stephenbrough.jetpack_learning.domain.HarryPotterRepositoryImpl
 import com.stephenbrough.jetpack_learning.domain.HarryPotterService
 import com.stephenbrough.jetpack_learning.domain.LoginApiService
+import com.stephenbrough.jetpack_learning.domain.StarWarsRepository
+import com.stephenbrough.jetpack_learning.domain.StarWarsRepositoryImpl
 import com.stephenbrough.jetpack_learning.domain.network.MockLoginInterceptor
 import com.stephenbrough.jetpack_learning.domain.prefs.AuthPrefs
 import com.stephenbrough.jetpack_learning.domain.prefs.DataStoreAuthPrefs
@@ -34,6 +37,15 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
+
+    @Provides
+    @Singleton
+    fun providesApolloClient(): ApolloClient {
+        return ApolloClient
+            .Builder()
+            .serverUrl("https://graphql.org/swapi-graphql/graphql/")
+            .build()
+    }
 
     @Provides
     @Singleton
@@ -110,6 +122,10 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindAmiiboRepository(amiiboRepositoryImpl: AmiiboRepositoryImpl): AmiiboRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindStarWarsRepository(starWarsRepositoryImpl: StarWarsRepositoryImpl): StarWarsRepository
 }
 
 @Module

@@ -75,19 +75,6 @@ class TopLevelBackStack<T : Any>(startKey: T) {
     }
 
     /**
-     * Clears entire back stack. Typically only used when logging in
-     * or out
-     *
-     * @param startKey The new top-level route
-     */
-    fun clear(startKey: T) {
-        topLevelStacks.clear()
-        topLevelStacks.put(startKey, mutableStateListOf(startKey))
-        topLevelKey = startKey
-        updateBackStack()
-    }
-
-    /**
      * Removes the last route. If the last route was a top-level route
      * then remove any child routes as well
      */
