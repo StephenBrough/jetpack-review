@@ -26,19 +26,24 @@ fun StarWarsDetailsPage(
     id: String
 ) {
     val viewModel =
-        hiltViewModel<StarWarsDetailsViewModel, StarWarsDetailsViewModel.DetailsFactory>(
-            key = id
-        ) { factory ->
+        hiltViewModel<StarWarsDetailsViewModel, StarWarsDetailsViewModel.DetailsFactory> { factory ->
             factory.create(id)
         }
 
     val state by viewModel.state.collectAsStateWithLifecycle()
     val currentState = state
 
-    when(currentState) {
-        is StarWarsDetailsUiState.ErrorState -> ErrorScreen(modifier, errorMessage = currentState.message)
+    when (currentState) {
+        is StarWarsDetailsUiState.ErrorState -> ErrorScreen(
+            modifier,
+            errorMessage = currentState.message
+        )
+
         StarWarsDetailsUiState.Loading -> LoadingScreen(modifier)
-        is StarWarsDetailsUiState.Success -> StarWarsMovieDetailContent(modifier, movie = currentState.movie)
+        is StarWarsDetailsUiState.Success -> StarWarsMovieDetailContent(
+            modifier,
+            movie = currentState.movie
+        )
     }
 }
 
@@ -78,7 +83,7 @@ fun StarWarsMovieDetailContent(
             ),
         horizontalAlignment = Alignment.CenterHorizontally,
 
-    ) {
+        ) {
 //                        with(sharedScope) {
 //                            AsyncImage(
 //                                modifier = Modifier.sharedElement(

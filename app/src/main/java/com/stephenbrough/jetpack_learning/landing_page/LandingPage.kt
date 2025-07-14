@@ -33,10 +33,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import androidx.navigation3.ui.NavDisplay
+import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import com.stephenbrough.jetpack_learning.MainActivity.Companion.LocalNavSharedTransitionScope
 import com.stephenbrough.jetpack_learning.amiibo_details_page.AmiiboDetailsPage
 import com.stephenbrough.jetpack_learning.amiibo_list_page.AmiigoListPage
@@ -196,6 +199,11 @@ fun LandingPage(
                 onBack = {
                     topLevelBackStack.removeLast()
                 },
+                entryDecorators = listOf(
+                    rememberSceneSetupNavEntryDecorator(),
+                    rememberSavedStateNavEntryDecorator(),
+                    rememberViewModelStoreNavEntryDecorator(),
+                ),
                 entryProvider = entryProvider {
                     entry<LoadingRoute> {
                         Box(
